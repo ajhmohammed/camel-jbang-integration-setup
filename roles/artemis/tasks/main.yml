@@ -1,3 +1,4 @@
+---
 - name: Create user for Artemis
   user:
     name: artemis
@@ -20,10 +21,25 @@
     dest: /opt/
     remote_src: yes
 
+- name: Remove downloaded Artemis zip
+  file:
+    path: /tmp/artemis.zip
+    state: absent
+
 - name: Set up Artemis broker
-  command: >
-    /opt/apache-artemis-2.31.2/bin/artemis create --user admin --password admin
-    --role admin --allow-anonymous no /opt/artemis-instance
+  command:
+    argv:
+      - /opt/apache-artemis-2.31.2/bin/artemis
+      - create
+      - /opt/artemis-instance
+      - --user
+      - admin
+      - --password
+      - admin
+      - --role
+      - admin
+      - --allow-anonymous
+      - no
   args:
     creates: /opt/artemis-instance
 
@@ -62,3 +78,10 @@
     name: artemis
     enabled: yes
     state: started
+
+- name: Symlink /opt/artemis -> current version
+  file:
+    src: /opt/apache-artemis-2.31.2
+    dest: /opt/artemis
+    state: link
+    force: yes
