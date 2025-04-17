@@ -1,7 +1,8 @@
 ---
 - name: Setup JBang + Apache Camel + Artemis JMS
-  hosts: production
+  hosts: localhost
   become: yes
+  connection: local
 
   roles:
     - java
