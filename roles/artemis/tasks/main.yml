@@ -1,0 +1,64 @@
+- name: Create user for Artemis
+  user:
+    name: artemis
+    shell: /bin/bash
+    create_home: yes
+
+- name: Install required tools
+  apt:
+    name: unzip
+    state: present
+
+- name: Download Apache Artemis
+  get_url:
+    url: https://archive.apache.org/dist/activemq/activemq-artemis/2.31.2/apache-artemis-2.31.2-bin.zip
+    dest: /tmp/artemis.zip
+
+- name: Unzip Artemis
+  unarchive:
+    src: /tmp/artemis.zip
+    dest: /opt/
+    remote_src: yes
+
+- name: Set up Artemis broker
+  command: >
+    /opt/apache-artemis-2.31.2/bin/artemis create --user admin --password admin
+    --role admin --allow-anonymous no /opt/artemis-instance
+  args:
+    creates: /opt/artemis-instance
+
+- name: Change ownership of Artemis instance
+  file:
+    path: /opt/artemis-instance
+    owner: artemis
+    group: artemis
+    recurse: yes
+
+- name: Create systemd service for Artemis
+  copy:
+    dest: /etc/systemd/system/artemis.service
+    content: |
+      [Unit]
+      Description=Apache ActiveMQ Artemis
+      After=network.target
+
+      [Service]
+      User=artemis
+      WorkingDirectory=/opt/artemis-instance
+      ExecStart=/opt/artemis-instance/bin/artemis run
+      Restart=always
+      SuccessExitStatus=143
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: '0644'
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and start Artemis
+  systemd:
+    name: artemis
+    enabled: yes
+    state: started

@@ -1,0 +1,9 @@
+---
+- name: Setup JBang + Apache Camel + Artemis JMS
+  hosts: production
+  become: yes
+
+  roles:
+    - java
+    - jbang
+    - artemis

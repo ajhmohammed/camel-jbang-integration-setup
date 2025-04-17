@@ -1,0 +1,16 @@
+- name: Download JBang installer
+  get_url:
+    url: https://github.com/jbangdev/jbang/releases/latest/download/install.sh
+    dest: /tmp/jbang-install.sh
+    mode: '0755'
+
+- name: Install JBang
+  shell: bash /tmp/jbang-install.sh
+  args:
+    creates: /usr/local/bin/jbang
+
+- name: Ensure JBang is available in PATH for all users
+  copy:
+    content: 'export PATH="$HOME/.jbang/bin:$PATH"'
+    dest: /etc/profile.d/jbang.sh
+    mode: '0644'
