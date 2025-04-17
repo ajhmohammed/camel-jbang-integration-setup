@@ -1,16 +1,20 @@
-- name: Download JBang installer
-  get_url:
-    url: https://github.com/jbangdev/jbang/releases/latest/download/install.sh
-    dest: /tmp/jbang-install.sh
-    mode: '0755'
-
-- name: Install JBang
-  shell: bash /tmp/jbang-install.sh
+---
+- name: Install JBang via official script
+  shell: |
+    curl -Ls https://sh.jbang.dev | bash -s -
   args:
-    creates: /usr/local/bin/jbang
+    executable: /bin/bash
+    creates: "{{ ansible_env.HOME }}/.jbang/bin/jbang"
 
 - name: Ensure JBang is available in PATH for all users
   copy:
     content: 'export PATH="$HOME/.jbang/bin:$PATH"'
     dest: /etc/profile.d/jbang.sh
     mode: '0644'
+
+- name: Symlink jbang to /usr/local/bin for global use
+  file:
+    src: "{{ ansible_env.HOME }}/.jbang/bin/jbang"
+    dest: /usr/local/bin/jbang
+    state: link
+    force: true
